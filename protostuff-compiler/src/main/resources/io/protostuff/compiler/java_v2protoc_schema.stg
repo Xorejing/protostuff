@@ -31,7 +31,7 @@ schema_fullname(proto, options) ::= <<
 >>
 
 message_fullname(message, options) ::= <<
-<message.proto.javaPackageName>.<message.proto:derived_outer_name(proto=it, options=options)>.<message.relativeName>
+<message.proto.javaPackageName>.Schema<message.proto:derived_outer_name(proto=it, options=options)>.<message.relativeName>
 >>
 
 enum_fullname(eg, options) ::= <<
