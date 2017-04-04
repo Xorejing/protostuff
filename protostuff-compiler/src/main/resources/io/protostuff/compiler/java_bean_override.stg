@@ -146,7 +146,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Objects;
+
 <if(message.repeatedFieldPresent)>
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +169,7 @@ import io.protostuff.Message;
 import io.protostuff.Output;
 <if(options.generate_pipe_schema)>
 import io.protostuff.Pipe;
-import io.protostuff.runtime.RuntimeSchema;
+
 <endif>
 
 import io.protostuff.Schema;
@@ -384,10 +384,14 @@ public boolean equals(Object obj) {
     <endif>
 }
 
+private boolean equals(Object a, Object b) {
+    return (a == b) || (a != null && a.equals(b));
+}
+
 @Override
 public int hashCode() {
     <if(first(message.fields))>
-    return Objects.hash(<message.fields:field_name(field=it, options=options, message=message); separator=", ">);
+    return java.util.Arrays.hashCode(new Object[] {<message.fields:field_name(field=it, options=options, message=message); separator=", ">});
     <else>
     return 0;
     <endif>
@@ -396,7 +400,7 @@ public int hashCode() {
 >>
 
 field_equals(field, options, message) ::= <<
-Objects.equals(this.<var(val=field.name, fmt="CC", options=options)>, that.<var(val=field.name, fmt="CC", options=options)>)
+equals(this.<var(val=field.name, fmt="CC", options=options)>, that.<var(val=field.name, fmt="CC", options=options)>)
 >>
 
 field_name(field, options, message) ::= <<
@@ -774,7 +778,24 @@ DEFAULT_INSTANCE
 >>
 
 message_pipe_schema(message, options) ::= <<
-static final Pipe.Schema\<<message.name>\> PIPE_SCHEMA = RuntimeSchema.createFrom(<message.name>.class).getPipeSchema();
+static final Pipe.Schema\<<message.name>\> PIPE_SCHEMA = new Pipe.Schema\<<message.name>\>(<message:message_static_schema_ref(message=it, options=options)>)
+{
+	@Override
+    protected void transfer(Pipe pipe, Input input, Output output) throws IOException
+    {
+        for(int number = input.readFieldNumber(wrappedSchema);; number = input.readFieldNumber(wrappedSchema))
+        {
+            switch(number)
+            {
+                case 0:
+                    return;
+                <message.fields:field_transfer_switch(field=it, options=options); separator="\n">
+                default:
+                    input.handleUnknownField(number, wrappedSchema);
+            }
+        }
+    }
+};
 
 public static Pipe.Schema\<<message.name>\> getPipeSchema()
 {
