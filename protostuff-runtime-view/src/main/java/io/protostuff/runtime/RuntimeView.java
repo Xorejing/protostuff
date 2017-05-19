@@ -327,6 +327,7 @@ public final class RuntimeView {
 		 */
 		MAP {
 
+			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			public <T> Schema<T> create(final RuntimeSchema<T> ms, final Instantiator<T> instantiator,
 					final Predicate.Factory predicateFactory, final String[] args) {
@@ -337,8 +338,7 @@ public final class RuntimeView {
 
 				final int fieldCount = getFieldCount(fieldsByJaxbName.values());
 
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				RuntimeXmlBindingSchema<T> rtSchema = new RuntimeXmlBindingSchema<T>(ms.typeClass(), instantiator,
+				return new RuntimeXmlBindingSchema<T>(ms.typeClass(), instantiator,
 						new ArrayFieldMap(fieldsByJaxbName.values(), fieldCount)) {
 
 					@Override
@@ -355,18 +355,26 @@ public final class RuntimeView {
 
 					@Override
 					public void mergeFrom(Input input, T message) throws IOException {
-						// TODO Auto-generated method stub
+						for (int number = input.readFieldNumber(this); number != 0; number = input
+								.readFieldNumber(this)) {
+							final Field<T> field = fieldMap.getFieldByNumber(number);
+
+							if (field == null || null == fieldsByJaxbName.get(field.name)) {
+								input.handleUnknownField(number, this);
+							} else {
+								field.mergeFrom(input, message);
+							}
+						}
 
 					}
 
 					@Override
 					public void writeTo(Output output, T message) throws IOException {
-						// TODO Auto-generated method stub
-
+						for (Field<T> f : fieldMap.getFields())
+							f.writeTo(output, message);
 					}
 
 				};
-				return rtSchema;
 			}
 
 			private <T> int getFieldCount(final Collection<RuntimeXmlBindingField<T>> fieldsByJaxbName) {

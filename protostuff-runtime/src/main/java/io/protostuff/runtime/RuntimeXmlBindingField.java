@@ -4,6 +4,8 @@
 package io.protostuff.runtime;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.List;
 
 import io.protostuff.Input;
 import io.protostuff.Output;
@@ -32,9 +34,10 @@ public class RuntimeXmlBindingField<T> extends Field<T> {
 	 * @param repeated
 	 * @param tag
 	 */
-	public RuntimeXmlBindingField(FieldType type, int number, String name, boolean repeated, Tag tag) {
+	public RuntimeXmlBindingField(FieldType type, int number, String name, boolean repeated, Tag tag,
+			List<Annotation> jaxbAnnotations) {
 		super(type, number, name, repeated, tag);
-		// TODO Auto-generated constructor stub
+		// TODO check annotations
 	}
 
 	/**
