@@ -27,7 +27,7 @@ import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeSchema;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  *         erstellt 30.05.2017
  *

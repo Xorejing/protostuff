@@ -8,7 +8,7 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  * erstellt 30.05.2017
  *

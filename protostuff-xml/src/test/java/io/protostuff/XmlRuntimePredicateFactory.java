@@ -6,7 +6,7 @@ package io.protostuff;
 import io.protostuff.runtime.RuntimePredicate;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  * erstellt 29.05.2017
  *

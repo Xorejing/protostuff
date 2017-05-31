@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  */
 public class XmlBindingArrayFieldMap<T> implements FieldMap<T> {

@@ -7,7 +7,7 @@ import io.protostuff.Input;
 import io.protostuff.Output;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  */
 public interface RuntimePredicate<T> 

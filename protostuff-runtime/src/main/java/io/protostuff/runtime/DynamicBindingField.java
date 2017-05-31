@@ -21,7 +21,7 @@ import io.protostuff.Tag;
  * 
  * the additional mapping is used when the provided {@link RuntimePredicate} applies
  * 
- * @author i78v86e
+ * @author marug
  * 
  */
 public class DynamicBindingField<T> extends Field<T> {

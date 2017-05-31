@@ -13,7 +13,7 @@ import java.util.Map;
 import io.protostuff.runtime.HashFieldMap.FieldComparator;
 
 /**
- * @author i78v86e
+ * @author marug
  *
  */
 public final class XmlBindingHashFieldMap<T> implements FieldMap<T> {
