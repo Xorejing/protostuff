@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>protostuff-xml</artifactId>
-	<version>${project.parent.version}+template</version>
+  <version>${project.parent.version}-xmlbinding</version>
   <name>protostuff :: xml</name>
   <description>protostuff serialization using xml format</description>
   <packaging>jar</packaging>
@@ -51,27 +51,27 @@
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime-registry</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime-registry</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

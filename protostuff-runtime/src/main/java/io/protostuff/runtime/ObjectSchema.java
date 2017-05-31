@@ -400,6 +400,13 @@ public abstract class ObjectSchema extends PolymorphicSchema
         }
 
         Pipe.transferDirect(strategy.ARRAY_PIPE_SCHEMA, pipe, input, output);
+        
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(pipeSchema);
+        }
+
     }
 
     static void transferClass(Pipe pipe, Input input, Output output, int number,
@@ -744,6 +751,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
 
             schema.writeTo(output, value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
             return;
         }
         
@@ -759,6 +771,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
 
             schema.writeTo(output, value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
             return;
         }
         
@@ -795,6 +812,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 hdArray.genericElementSchema.writeTo(output, value);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(currentSchema);
+                }
                 return;
             }
 
@@ -818,6 +840,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 arraySchema.writeTo(output, value);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use( currentSchema);
+                }
+
                 return;
             }
 
@@ -836,6 +864,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 eio.genericElementSchema.writeTo(output, value);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(currentSchema);
+                }
                 return;
             }
 
@@ -854,6 +887,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 hs.genericElementSchema.writeTo(output, value);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(currentSchema);
+                }
                 return;
             }
 
@@ -886,6 +924,11 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
 
             strategy.ARRAY_SCHEMA.writeTo(output, value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
             return;
         }
 
@@ -940,6 +983,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
             
             schema.writeTo(output, value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput)output).use(currentSchema);
+            }
+            
             return;
         }
         
@@ -958,6 +1007,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 PolymorphicMapSchema.writeNonPublicMapTo(output, value,
                         strategy.POLYMORPHIC_MAP_SCHEMA, strategy);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(currentSchema);
+                }
+
                 return;
             }
 
@@ -978,6 +1033,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
 
             strategy.MAP_SCHEMA.writeTo(output, (Map<Object, Object>) value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
+
             return;
         }
 
@@ -996,6 +1057,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 PolymorphicCollectionSchema.writeNonPublicCollectionTo(output, value,
                         strategy.POLYMORPHIC_COLLECTION_SCHEMA, strategy);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(currentSchema);
+                }
+
                 return;
             }
 
@@ -1016,6 +1083,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
             }
 
             strategy.COLLECTION_SCHEMA.writeTo(output, (Collection<Object>) value);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
+
             return;
         }
         
@@ -1030,6 +1103,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
         }
 
         schema.writeTo(output, value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+
     }
 
     static void transferObject(Pipe.Schema<Object> pipeSchema, Pipe pipe,
@@ -1123,6 +1202,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.COLLECTION_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1137,6 +1222,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.MAP_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1151,6 +1242,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.COLLECTION_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1165,6 +1262,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.MAP_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1183,6 +1286,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(strategy.POLYMORPHIC_COLLECTION_PIPE_SCHEMA,
                         pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1201,6 +1310,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(strategy.POLYMORPHIC_MAP_PIPE_SCHEMA,
                         pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1230,6 +1345,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(hd.genericElementSchema.getPipeSchema(),
                         pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1250,6 +1371,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(arraySchema.getPipeSchema(), pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1269,6 +1396,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(eio.genericElementSchema.getPipeSchema(),
                         pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1287,6 +1420,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(hs.genericElementSchema.getPipeSchema(),
                         pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             }
 
@@ -1306,6 +1445,12 @@ public abstract class ObjectSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(derivedPipeSchema, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             default:
                 throw new ProtostuffException("Corrupt input.  Unknown field number: " + number);

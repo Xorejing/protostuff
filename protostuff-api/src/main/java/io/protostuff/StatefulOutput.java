@@ -27,5 +27,14 @@ public interface StatefulOutput extends Output
      * Updates the schema if {@code lastSchema} was indeed the last schema used.
      */
     public void updateLast(Schema<?> schema, Schema<?> lastSchema);
+    
+    /**
+     * use a different Schema; stash the old one to call updateLast() later
+     * 
+     * @param schema the Schema
+     * 
+     * @return the StatefulOutput, for method concatenation
+     */
+    public StatefulOutput use(Schema<?> schema);
 
 }

@@ -136,6 +136,12 @@ public abstract class PolymorphicPojoMapSchema extends PolymorphicSchema
         }
         
         schema.writeTo(output, value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+        
     }
     
     static Object readObjectFrom(Input input, Schema<?> schema, Object owner,
@@ -193,5 +199,11 @@ public abstract class PolymorphicPojoMapSchema extends PolymorphicSchema
         }
         
         Pipe.transferDirect(derivedPipeSchema, pipe, input, output);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(pipeSchema);
+        }
+        
     }
 }

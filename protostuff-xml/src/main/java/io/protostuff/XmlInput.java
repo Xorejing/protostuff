@@ -32,33 +32,48 @@ import javax.xml.stream.XMLStreamReader;
  * @author David Yu
  * @created May 24, 2010
  */
-public final class XmlInput implements Input {
-	private static final byte[] EMPTY = new byte[0];
+public final class XmlInput implements Input
+{
+    private static final byte[] EMPTY = new byte[0];
 
-	private final XMLStreamReader parser;
-	private boolean emptyMessage = false;
+    private final XMLStreamReader parser;
+    private boolean emptyMessage = false;
 	private int attributeCount = 0;
 	private int attributeIndex = -1;
 
-	public XmlInput(XMLStreamReader parser) {
-		this.parser = parser;
-	}
+    public XmlInput(XMLStreamReader parser)
+    {
+        this.parser = parser;
+    }
 
-	private int next() throws IOException {
-		try {
-			return parser.next();
-		} catch (XMLStreamException e) {
-			throw new XmlInputException(e);
-		}
-	}
+    private int next() throws IOException
+    {
+        try
+        {
+            return parser.next();
+        }
+        catch (XMLStreamException e)
+        {
+            throw new XmlInputException(e);
+        }
+    }
 
-	int nextTag() throws IOException {
-		try {
-			if (END_ELEMENT == parser.getEventType()) {
+    int nextTag() throws IOException
+    {
+        try
+        {
+			if (END_ELEMENT == parser.getEventType()) 
+			{
+				if (0 < attributeCount && -1 == attributeIndex)
+				{
+					// xmlValue
+					return parser.getEventType();
+				}
 				return parser.nextTag();
 			}
 			attributeCount = parser.getAttributeCount();
-			if (0 == attributeCount) {
+			if (0 == attributeCount) 
+			{
 				return parser.nextTag();
 			}
 
@@ -66,248 +81,310 @@ public final class XmlInput implements Input {
 			attributeIndex = attributeIndex + 1;
 			if (attributeCount == attributeIndex) {
 				attributeIndex = -1;
-				return parser.nextTag();
 			}
 			// stay put while parsing the attributes
 			return parser.getEventType();
 
-		} catch (XMLStreamException e) {
-			throw new XmlInputException(e);
-		}
-	}
+        }
+        catch (XMLStreamException e)
+        {
+            throw new XmlInputException(e);
+        }
+    }
 
-	private byte[] getB64Decoded() throws IOException {
-		try {
-			for (int next = parser.next();; next = parser.next()) {
-				switch (next) {
-				case CHARACTERS:
-					byte[] decoded = B64Code.cdecode(parser.getTextCharacters(), parser.getTextStart(),
-							parser.getTextLength());
+    private byte[] getB64Decoded() throws IOException
+    {
+        try
+        {
+            for (int next = parser.next();; next = parser.next())
+            {
+                switch (next)
+                {
+                    case CHARACTERS:
+                        byte[] decoded = B64Code.cdecode(parser.getTextCharacters(),
+                                parser.getTextStart(), parser.getTextLength());
 
-					while (END_ELEMENT != parser.next()) {
-						// move to next element
-					}
-					nextTag();
-					return decoded;
+                        while (END_ELEMENT != parser.next())
+                        {
+                        // noop
+                        }
 
-				case END_ELEMENT:
-					// empty bytestring
-					// move to next element
-					nextTag();
-					return EMPTY;
+                        // move to next element
+                        nextTag();
 
-				default:
-					continue;
-				}
-			}
-		} catch (XMLStreamException e) {
-			throw new XmlInputException(e);
-		}
-	}
+                        return decoded;
 
-	private String getText() throws IOException {
-		try {
+                    case END_ELEMENT:
+                        // empty bytestring
+
+                        // move to next element
+                        nextTag();
+
+                        return EMPTY;
+
+                    default:
+                        continue;
+                }
+            }
+        }
+        catch (XMLStreamException e)
+        {
+            throw new XmlInputException(e);
+        }
+    }
+
+    private String getText() throws IOException
+    {
+        try
+        {
 			final String text = -1 == attributeIndex ? parser.getElementText()
 					: parser.getAttributeValue(attributeIndex);
-			// move to next element
-			nextTag();
-			return text;
-		} catch (XMLStreamException e) {
-			throw new XmlInputException(e);
-		}
-	}
+            // move to next element
+            nextTag();
+            return text;
+        }
+        catch (XMLStreamException e)
+        {
+            throw new XmlInputException(e);
+        }
+    }
 
-	@Override
-	public <T> void handleUnknownField(int fieldNumber, Schema<T> schema) throws IOException {
+    @Override
+    public <T> void handleUnknownField(int fieldNumber, Schema<T> schema) throws IOException
+    {
 		final String name = -1 == attributeIndex ? parser.getLocalName() : parser.getAttributeLocalName(attributeIndex);
-		while (true) {
-			switch (next()) {
-			case ATTRIBUTE:
-				// we can skip this unknown attribute field.
-				nextTag();
-				return;
-			case END_ELEMENT:
-				if (name.equals(parser.getLocalName())) {
-					// we can skip this unknown scalar field.
-					nextTag();
-					return;
-				}
-				throw new XmlInputException("Unknown field: " + name + " on message " + schema.messageFullName());
-			case END_DOCUMENT:
-				// malformed xml.
-				throw new XmlInputException("Malformed xml on message " + schema.messageFullName());
-			case START_ELEMENT:
-				// message field
-				// we do not know how deep this message is
-				throw new XmlInputException("Unknown field: " + name + " on message " + schema.messageFullName());
-			default:
-				continue;
-			}
-		}
-	}
+        while (true)
+        {
+            switch (next())
+            {
+            	case ATTRIBUTE:
+            		// we can skip this unknown attribute field.
+            		nextTag();
+            		return;
+                case END_ELEMENT:
+                    if (name.equals(parser.getLocalName()))
+                    {
+                        // we can skip this unknown scalar field.
+                        nextTag();
+                        return;
+                    }
+                    throw new XmlInputException("Unknown field: " + name + " on message " +
+                            schema.messageFullName());
+                case END_DOCUMENT:
+                    // malformed xml.
+                case START_ELEMENT:
+                    // message field
+                    // we do not know how deep this message is
+                    throw new XmlInputException("Unknown field: " + name + " on message " +
+                            schema.messageFullName());
+                default:
+                	continue;
+            }
+        }
+    }
 
-	@Override
-	public <T> int readFieldNumber(final Schema<T> schema) throws IOException {
-		if (emptyMessage) {
-			emptyMessage = false;
-			return 0;
-		}
+    @Override
+    public <T> int readFieldNumber(final Schema<T> schema) throws IOException
+    {
+        if (emptyMessage)
+        {
+            emptyMessage = false;
+            return 0;
+        }
 
-		if (parser.getEventType() == END_ELEMENT) {
-			return 0;
-		}
+        if (parser.getEventType() == END_ELEMENT)
+            return 0;
 
 		final String name = -1 == attributeIndex ? parser.getLocalName() : parser.getAttributeLocalName(attributeIndex);
-		final int num = schema.getFieldNumber(name);
+		final int num = (-1 == attributeIndex && 0 < attributeCount) ? schema.getFieldNumber(schema.typeClass().getSimpleName())
+				:  schema.getFieldNumber(name);
 
-		if (num == 0) {
-			while (true) {
-				switch (next()) {
-				case ATTRIBUTE:
-					// we can skip this unknown attribute field.
-					nextTag();
+        if (num == 0)
+        {
+        	if(0 < attributeCount) 
+        	{
+        		attributeCount = 0;
+        		// no xmlValue
+        		try 
+        		{
+					parser.nextTag();
 					return readFieldNumber(schema);
-				case END_ELEMENT:
-					if (name.equals(parser.getLocalName())) {
-						// we can skip this unknown scalar field.
-						nextTag();
-						return readFieldNumber(schema);
-					}
-					throw new XmlInputException("Unknown field: " + name + " on message " + schema.messageFullName());
-				case END_DOCUMENT:
-					// malformed xml.
-					throw new XmlInputException("Malformed xml on message " + schema.messageFullName());
-				case START_ELEMENT:
-					// message field
-					// we do not know how deep this message is
-					throw new XmlInputException("Unknown field: " + name + " on message " + schema.messageFullName());
-				default:
-					continue;
+				} catch (XMLStreamException e) 
+        		{
+					throw new IOException(e);
 				}
-			}
-		}
+        	}
+            while (true)
+            {
+                switch (next())
+                {
+                	case ATTRIBUTE:
+                		// we can skip this unknown attribute field.
+                		nextTag();
+                		return readFieldNumber(schema);
+                    case END_ELEMENT:
+                        if (name.equals(parser.getLocalName()))
+                        {
+                            // we can skip this unknown scalar field.
+                            nextTag();
+                            return readFieldNumber(schema);
+                        }
+                        throw new XmlInputException("Unknown field: " + name + " on message " +
+                                schema.messageFullName());
+                    case END_DOCUMENT:
+                        // malformed xml.
+                    case START_ELEMENT:
+                        // message field
+                        // we do not know how deep this message is
+                        throw new XmlInputException("Unknown field: " + name + " on message " +
+                                schema.messageFullName());
+                    default:
+                    	continue;
+                }
+            }
+        }
 
-		return num;
-	}
+        return num;
+    }
 
-	@Override
-	public int readInt32() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readInt32() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public int readUInt32() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readUInt32() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public int readSInt32() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readSInt32() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public int readFixed32() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readFixed32() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public int readSFixed32() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readSFixed32() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public long readInt64() throws IOException {
-		return Long.parseLong(getText());
-	}
+    @Override
+    public long readInt64() throws IOException
+    {
+        return Long.parseLong(getText());
+    }
 
-	@Override
-	public long readUInt64() throws IOException {
-		return Long.parseLong(getText());
-	}
+    @Override
+    public long readUInt64() throws IOException
+    {
+        return Long.parseLong(getText());
+    }
 
-	@Override
-	public long readSInt64() throws IOException {
-		return Long.parseLong(getText());
-	}
+    @Override
+    public long readSInt64() throws IOException
+    {
+        return Long.parseLong(getText());
+    }
 
-	@Override
-	public long readFixed64() throws IOException {
-		return Long.parseLong(getText());
-	}
+    @Override
+    public long readFixed64() throws IOException
+    {
+        return Long.parseLong(getText());
+    }
 
-	@Override
-	public long readSFixed64() throws IOException {
-		return Long.parseLong(getText());
-	}
+    @Override
+    public long readSFixed64() throws IOException
+    {
+        return Long.parseLong(getText());
+    }
 
-	@Override
-	public float readFloat() throws IOException {
-		return Float.parseFloat(getText());
-	}
+    @Override
+    public float readFloat() throws IOException
+    {
+        return Float.parseFloat(getText());
+    }
 
-	@Override
-	public double readDouble() throws IOException {
-		return Double.parseDouble(getText());
-	}
+    @Override
+    public double readDouble() throws IOException
+    {
+        return Double.parseDouble(getText());
+    }
 
-	@Override
-	public boolean readBool() throws IOException {
-		return Boolean.parseBoolean(getText());
-	}
+    @Override
+    public boolean readBool() throws IOException
+    {
+        return Boolean.parseBoolean(getText());
+    }
 
-	@Override
-	public int readEnum() throws IOException {
-		return Integer.parseInt(getText());
-	}
+    @Override
+    public int readEnum() throws IOException
+    {
+        return Integer.parseInt(getText());
+    }
 
-	@Override
-	public String readString() throws IOException {
-		return getText();
-	}
+    @Override
+    public String readString() throws IOException
+    {
+        return getText();
+    }
 
-	@Override
-	public ByteString readBytes() throws IOException {
-		return ByteString.wrap(readByteArray());
-	}
+    @Override
+    public ByteString readBytes() throws IOException
+    {
+        return ByteString.wrap(readByteArray());
+    }
 
-	@Override
-	public byte[] readByteArray() throws IOException {
-		return getB64Decoded();
-	}
+    @Override
+    public byte[] readByteArray() throws IOException
+    {
+        return getB64Decoded();
+    }
 
-	@Override
-	public <T> T mergeObject(T value, final Schema<T> schema) throws IOException {
-		emptyMessage = nextTag() == END_ELEMENT;
+    @Override
+    public <T> T mergeObject(T value, final Schema<T> schema) throws IOException
+    {
+        emptyMessage = nextTag() == END_ELEMENT;
 
-		if (value == null) {
-			value = schema.newMessage();
-		}
+        if (value == null)
+            value = schema.newMessage();
 
-		schema.mergeFrom(this, value);
-		if (!schema.isInitialized(value)) {
-			throw new UninitializedMessageException(value, schema);
-		}
+        schema.mergeFrom(this, value);
 
-		// onto the next
-		nextTag();
-		return value;
-	}
+        if (!schema.isInitialized(value))
+            throw new UninitializedMessageException(value, schema);
 
-	@Override
-	public void transferByteRangeTo(Output output, boolean utf8String, int fieldNumber, boolean repeated)
-			throws IOException {
-		if (utf8String)
-			output.writeString(fieldNumber, readString(), repeated);
-		else
-			output.writeByteArray(fieldNumber, readByteArray(), repeated);
-	}
+        // onto the next
+        nextTag();
 
-	/**
-	 * Reads a byte array/ByteBuffer value.
-	 */
-	@Override
-	public ByteBuffer readByteBuffer() throws IOException {
-		return ByteBuffer.wrap(readByteArray());
-	}
+        return value;
+    }
+
+    @Override
+    public void transferByteRangeTo(Output output, boolean utf8String, int fieldNumber,
+            boolean repeated) throws IOException
+    {
+        if (utf8String)
+            output.writeString(fieldNumber, readString(), repeated);
+        else
+            output.writeByteArray(fieldNumber, readByteArray(), repeated);
+    }
+
+    /**
+     * Reads a byte array/ByteBuffer value.
+     */
+    @Override
+    public ByteBuffer readByteBuffer() throws IOException
+    {
+        return ByteBuffer.wrap(readByteArray());
+    }
 
 }

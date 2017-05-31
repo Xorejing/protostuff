@@ -149,9 +149,22 @@ public abstract class PolymorphicThrowableSchema extends PolymorphicSchema
         }
 
         if (tryWriteWithoutCause(output, value, schema))
+        {
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(currentSchema);
+            }
             return;
+        }
 
         schema.writeTo(output, value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+
     }
 
     static boolean tryWriteWithoutCause(Output output, Object value,
@@ -268,6 +281,12 @@ public abstract class PolymorphicThrowableSchema extends PolymorphicSchema
         }
 
         Pipe.transferDirect(derivedPipeSchema, pipe, input, output);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(pipeSchema);
+        }
+
     }
 
 }

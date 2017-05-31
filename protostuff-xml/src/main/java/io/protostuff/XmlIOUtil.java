@@ -305,7 +305,7 @@ public final class XmlIOUtil
             throw new XmlInputException("Expected token START_ELEMENT: " + schema.messageName());
         }
 
-        XmlInput input = new XmlInput(parser);
+        final XmlInput input = new XmlInput(parser);
         if (input.nextTag() == END_ELEMENT)
         {
             // if(!simpleName.equals(parser.getLocalName()))

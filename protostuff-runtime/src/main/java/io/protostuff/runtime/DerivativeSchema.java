@@ -119,6 +119,12 @@ public abstract class DerivativeSchema implements Schema<Object>
 
         // write the rest of the fields of the exact type
         schema.writeTo(output, value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(this);
+        }
+
     }
 
     /**
@@ -145,6 +151,12 @@ public abstract class DerivativeSchema implements Schema<Object>
             }
 
             Pipe.transferDirect(pipeSchema, pipe, input, output);
+            if (output instanceof StatefulOutput)
+            {
+                // update using the derived schema.
+                ((StatefulOutput) output).use(this);
+            }
+
         }
 
     };
