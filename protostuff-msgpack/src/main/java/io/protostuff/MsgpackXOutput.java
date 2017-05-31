@@ -116,7 +116,8 @@ public class MsgpackXOutput extends WriteSession implements Output, StatefulOutp
     /**
      * Before serializing a message/object tied to a schema, this should be called.
      */
-    public MsgpackXOutput use(Schema<?> schema)
+    @Override
+	public MsgpackXOutput use(Schema<?> schema)
     {
         this.schema = schema;
         return this;

@@ -15,7 +15,6 @@
 package io.protostuff.runtime;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -367,71 +366,6 @@ public final class RuntimeView
 			public <T> Schema<T> create(RuntimeSchema<T> ms, Instantiator<T> instantiator, Predicate.Factory pf, String[] args)
 			{
 				return INCLUDE.create(ms, instantiator, pf, args);
-			}
-		},
-		/**
-		 * map field names, e.g. for xml binding
-		 */
-		MAP {
-
-			@SuppressWarnings({ "rawtypes", "unchecked" })
-			@Override
-			public <T> Schema<T> create(final RuntimeSchema<T> ms, final Instantiator<T> instantiator,
-					final Predicate.Factory predicateFactory, final String[] args) {
-
-				final HashMap<String, RuntimeXmlBindingField<T>> fieldsByJaxbName = predicateFactory == null //
-						? null // TODO
-						: null;
-
-				final int fieldCount = getFieldCount(fieldsByJaxbName.values());
-
-				return new RuntimeXmlBindingSchema<T>(ms.typeClass(), instantiator,
-						new ArrayFieldMap(fieldsByJaxbName.values(), fieldCount)) {
-
-					@Override
-					public String getFieldName(int number) {
-						final Field<T> field = fieldMap.getFieldByNumber(number);
-						return field == null ? null : field.name;
-					}
-
-					@Override
-					public int getFieldNumber(String name) {
-						final Field<T> field = fieldsByJaxbName.get(name);
-						return null == field ? 0 : field.number;
-					}
-
-					@Override
-					public void mergeFrom(Input input, T message) throws IOException {
-						for (int number = input.readFieldNumber(this); number != 0; number = input
-								.readFieldNumber(this)) {
-							final Field<T> field = fieldMap.getFieldByNumber(number);
-
-							if (field == null || null == fieldsByJaxbName.get(field.name)) {
-								input.handleUnknownField(number, this);
-							} else {
-								field.mergeFrom(input, message);
-							}
-						}
-
-					}
-
-					@Override
-					public void writeTo(Output output, T message) throws IOException {
-						for (Field<T> f : fieldMap.getFields())
-							f.writeTo(output, message);
-					}
-
-				};
-			}
-
-			private <T> int getFieldCount(final Collection<RuntimeXmlBindingField<T>> fieldsByJaxbName) {
-				int max = 0;
-				for (Field<?> field : fieldsByJaxbName) {
-					if (field.number > max) {
-						max = field.number;
-					}
-				}
-				return max;
 			}
 		};
 	}
