@@ -54,6 +54,14 @@ public class MsgpackOutput implements Output, StatefulOutput
 
     }
 
+	@Override
+	public StatefulOutput use(Schema<?> schema) 
+	{
+        this.schema = schema;
+		return this;
+	}
+
+
     /**
      * Before serializing a message/object tied to a schema, this should be called. This also resets the internal state
      * of this output.

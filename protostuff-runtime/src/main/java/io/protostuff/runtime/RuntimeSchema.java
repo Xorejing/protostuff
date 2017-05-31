@@ -188,6 +188,64 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
     }
 
     /**
+     * Generates a schema from the given class with additional xml binding strategy
+     * 
+     */
+    public static <T> RuntimeSchema<T> createFrom(Class<T> typeClass,
+    		RuntimePredicate.Factory<T> view, IdStrategy strategy)
+    {
+        if (typeClass.isInterface()
+                || Modifier.isAbstract(typeClass.getModifiers()))
+        {
+            throw new RuntimeException(
+                    "The root object can neither be an abstract "
+                            + "class nor interface: \"" + typeClass.getName());
+        }
+
+        final Map<String, java.lang.reflect.Field> fieldMap = findInstanceFields(typeClass);
+        final ArrayList<Field<T>> fields = new ArrayList<Field<T>>(
+                fieldMap.size());
+
+        int i = 0;
+        int xmlValueFieldNumber = 0;
+        String xmlValueFieldName = "";
+        for (java.lang.reflect.Field f : fieldMap.values())
+        {
+            if (f.getAnnotation(Deprecated.class) != null)
+            {
+                // this field should be ignored by ProtoStuff.
+                // preserve its field number for backward-forward compat
+                i++;
+                continue;
+            }
+            if(DynamicBindingField.fieldIsXmlTransient(f))
+            {
+            	continue;
+            }
+            final int fieldMapping = ++i;
+            final String name = f.getName();
+            final Field<T> field = RuntimeFieldFactory.getFieldFactory(
+                    f.getType(), strategy).create(fieldMapping, name, f,
+                    strategy);
+            if (DynamicBindingField.fieldIsXmlValue(f))
+            {
+            	xmlValueFieldNumber = field.number;
+            	xmlValueFieldName = typeClass.getSimpleName();
+            }
+            final Field<T> aliasField = RuntimeFieldFactory.getFieldFactory(
+                    f.getType(), strategy).create(fieldMapping,
+                    	DynamicBindingField.retrieveXmlAlias(f), f, strategy);
+            final DynamicBindingField<T> xmlBinding = new DynamicBindingField<T>(field, aliasField,
+            		DynamicBindingField.fieldIsXmlAttribute(f), DynamicBindingField.fieldIsXmlValue(f),
+            		view.create(null));
+            fields.add(xmlBinding);
+        }
+        
+        return new RuntimeSchema<T>(typeClass, fields, xmlValueFieldName, xmlValueFieldNumber, 
+        		RuntimeEnv.newInstantiator(typeClass));
+    }
+    
+    /**
      * Generates a schema from the given class with the exclusion of certain fields.
      */
     public static <T> RuntimeSchema<T> createFrom(Class<T> typeClass,
@@ -363,7 +421,21 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
         this.typeClass = typeClass;
     }
 
-	private FieldMap<T> createFieldMap(Collection<Field<T>> fields)
+    public RuntimeSchema(Class<T> typeClass, Collection<Field<T>> fields, String xmlValueFieldName, 
+    		int xmlValueFieldNumber, Instantiator<T> instantiator)
+    {
+		this.fieldMap = createFieldMap(fields, xmlValueFieldName, xmlValueFieldNumber);
+		this.pipeSchema = new RuntimePipeSchema<T>(this, fieldMap);
+        this.instantiator = instantiator;
+        this.typeClass = typeClass;
+    }
+	
+    private FieldMap<T> createFieldMap(Collection<Field<T>> fields)
+	{
+		return createFieldMap(fields, "", 0);
+	}
+	
+	private FieldMap<T> createFieldMap(Collection<Field<T>> fields, String xmlValueFieldName, int xmlValueFieldNumber)
 	{
 		int lastFieldNumber = 0;
 		for (Field<T> field : fields)
@@ -375,10 +447,12 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
 		}
 		if (preferHashFieldMap(fields, lastFieldNumber))
 		{
-			return new HashFieldMap<T>(fields);
+			return 0 == xmlValueFieldNumber ? new HashFieldMap<T>(fields) 
+					: new XmlBindingHashFieldMap<T>(fields, xmlValueFieldName, xmlValueFieldNumber);
 		}
 		// array field map should be more efficient
-		return new ArrayFieldMap<T>(fields, lastFieldNumber);
+		return 0 == xmlValueFieldNumber ? new ArrayFieldMap<T>(fields, lastFieldNumber) 
+				: new XmlBindingArrayFieldMap<T>(fields, lastFieldNumber, xmlValueFieldName, xmlValueFieldNumber);
 	}
 
 	private boolean preferHashFieldMap(Collection<Field<T>> fields, int lastFieldNumber)

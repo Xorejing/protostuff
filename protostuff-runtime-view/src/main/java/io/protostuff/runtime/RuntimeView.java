@@ -130,9 +130,9 @@ public final class RuntimeView
         {
             super(typeClass, instantiator);
 
-            this.fields = fields;
-        }
-    }
+			this.fields = fields;
+		}
+	}
 
     /**
      * Built-in view schema factories.
@@ -281,6 +281,7 @@ public final class RuntimeView
 		/**
 		 * @deprecated use {@link io.protostuff.runtime.RuntimeView.Factories#EXCLUDE}
 		 */
+		@Deprecated
 		EXCLUDE_OPTIMIZED_FOR_MERGE_ONLY {
 			@Override
 			public <T> Schema<T> create(RuntimeSchema<T> ms, Instantiator<T> instantiator, Predicate.Factory pf, String[] args)
@@ -359,6 +360,7 @@ public final class RuntimeView
 		/**
 		 * @deprecated use {@link io.protostuff.runtime.RuntimeView.Factories#INCLUDE}
 		 */
+		@Deprecated
 		INCLUDE_OPTIMIZED_FOR_MERGE_ONLY {
 			@Override
 			public <T> Schema<T> create(RuntimeSchema<T> ms, Instantiator<T> instantiator, Predicate.Factory pf, String[] args)
@@ -366,7 +368,7 @@ public final class RuntimeView
 				return INCLUDE.create(ms, instantiator, pf, args);
 			}
 		};
-    }
+	}
 
     static <T> HashMap<String, Field<T>> copyAndExclude(Class<? super T> typeClass,
             List<Field<T>> fields, final Predicate predicate)

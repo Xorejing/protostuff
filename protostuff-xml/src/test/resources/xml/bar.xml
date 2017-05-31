@@ -1,0 +1,6 @@
+<Bar>
+	<someBaz id="1">
+		<name>one-attribute</name>
+		<timestamp>567</timestamp>
+	</someBaz>
+</Bar>

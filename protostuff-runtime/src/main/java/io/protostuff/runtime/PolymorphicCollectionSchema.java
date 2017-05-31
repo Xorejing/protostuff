@@ -569,6 +569,12 @@ public abstract class PolymorphicCollectionSchema extends PolymorphicSchema
         }
 
         strategy.COLLECTION_SCHEMA.writeTo(output, (Collection<Object>) value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+
     }
 
     static void writeNonPublicCollectionTo(Output output, Object value,
@@ -1331,6 +1337,12 @@ public abstract class PolymorphicCollectionSchema extends PolymorphicSchema
                 // TODO use enum schema
                 Pipe.transferDirect(strategy.COLLECTION_PIPE_SCHEMA, pipe, input,
                         output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             case ID_COLLECTION:
                 strategy.transferCollectionId(input, output, number);
@@ -1344,6 +1356,12 @@ public abstract class PolymorphicCollectionSchema extends PolymorphicSchema
 
                 Pipe.transferDirect(strategy.COLLECTION_PIPE_SCHEMA, pipe, input,
                         output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             default:
                 throw new ProtostuffException("Corrupt input.");

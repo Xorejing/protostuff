@@ -1,0 +1,49 @@
+/**
+ * 
+ */
+package io.protostuff;
+
+import java.io.IOException;
+
+import javax.xml.stream.XMLStreamWriter;
+
+/**
+ * @author i78v86e
+ *
+ * erstellt 30.05.2017
+ *
+ */
+public class XmlFieldOutput extends XmlOutputBase {
+
+	/**
+	 * @param writer
+	 */
+	public XmlFieldOutput(XMLStreamWriter writer) {
+		super(writer);
+	}
+
+	/**
+	 * @param writer
+	 * @param schema
+	 */
+	public XmlFieldOutput(XMLStreamWriter writer, Schema<?> schema) {
+		super(writer, schema);
+	}
+
+	/**
+	 * @see io.protostuff.XmlOutputBase#write(javax.xml.stream.XMLStreamWriter, java.lang.String, java.lang.String)
+	 */
+	@Override
+	void write(XMLStreamWriter writer, String name, String value) throws IOException {
+		XmlOutputBase.writeField(writer, name, value);
+	}
+
+	/**
+	 * @see io.protostuff.XmlOutputBase#writeB64Encoded(javax.xml.stream.XMLStreamWriter, java.lang.String, char[])
+	 */
+	@Override
+	void writeB64Encoded(XMLStreamWriter writer, String name, char[] value) throws IOException {
+		XmlOutputBase.writeB64EncodedField(writer, name, value);
+	}
+
+}

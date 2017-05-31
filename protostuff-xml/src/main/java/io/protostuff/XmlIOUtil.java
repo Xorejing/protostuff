@@ -305,7 +305,8 @@ public final class XmlIOUtil
             throw new XmlInputException("Expected token START_ELEMENT: " + schema.messageName());
         }
 
-        if (parser.nextTag() == END_ELEMENT)
+        final XmlInput input = new XmlInput(parser);
+        if (input.nextTag() == END_ELEMENT)
         {
             // if(!simpleName.equals(parser.getLocalName()))
             // throw new XmlInputException("Expecting token END_ELEMENT: " + simpleName);
@@ -314,7 +315,7 @@ public final class XmlIOUtil
             return;
         }
 
-        schema.mergeFrom(new XmlInput(parser), message);
+        schema.mergeFrom(input, message);
 
         // if(!simpleName.equals(parser.getLocalName()))
         // throw new XmlInputException("Expecting token END_ELEMENT: " + simpleName);

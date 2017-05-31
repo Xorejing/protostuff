@@ -26,12 +26,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-import io.protostuff.StringSerializer.STRING;
 import org.junit.Test;
+
+import io.protostuff.StringSerializer.STRING;
 
 /**
  * Testing for xml ser/deser against messages.

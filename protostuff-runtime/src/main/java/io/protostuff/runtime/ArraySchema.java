@@ -181,6 +181,12 @@ public abstract class ArraySchema extends PolymorphicSchema
         }
 
         strategy.ARRAY_SCHEMA.writeTo(output, value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+
     }
 
     static Object readObjectFrom(Input input, Schema<?> schema, Object owner,

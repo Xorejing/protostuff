@@ -7,6 +7,7 @@
   </parent>
 
   <artifactId>protostuff-runtime-registry</artifactId>
+  <version>${project.parent.version}-xmlbinding</version>
   <name>protostuff :: runtime-registry</name>
   <description>id registration for runtime types</description>
 
@@ -19,13 +20,13 @@
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-core</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-core</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
@@ -39,7 +40,7 @@
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-collectionschema</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>io.protostuff</groupId>

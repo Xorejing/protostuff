@@ -76,7 +76,7 @@ final class HashFieldMap<T> implements FieldMap<T>
         return fields;
     }
 
-    private static class FieldComparator implements Comparator<Field<?>>
+    static class FieldComparator implements Comparator<Field<?>>
     {
         @Override
         public int compare(Field<?> o1, Field<?> o2)

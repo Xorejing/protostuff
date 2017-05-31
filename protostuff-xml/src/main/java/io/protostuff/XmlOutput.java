@@ -28,11 +28,15 @@ import io.protostuff.StringSerializer.STRING;
  * @author David Yu
  * @created May 24, 2010
  */
-public final class XmlOutput implements Output, StatefulOutput
+public final class XmlOutput implements StatefulOutput
 {
 
     static final char[] EMPTY = new char[0];
-
+    
+    private final XmlAttributeOutput xmlAttributeOutput;
+    private final XmlFieldOutput xmlFieldOutput;
+    private final XmlValueOutput xmlValueOutput;
+    
     private final XMLStreamWriter writer;
     private Schema<?> schema;
 
@@ -45,11 +49,17 @@ public final class XmlOutput implements Output, StatefulOutput
     {
         this.writer = writer;
         this.schema = schema;
+        this.xmlAttributeOutput = new XmlAttributeOutput(writer, schema);
+        this.xmlFieldOutput = new XmlFieldOutput(writer, schema);
+        this.xmlValueOutput = new XmlValueOutput(writer, schema);
     }
 
-    public XmlOutput use(Schema<?> schema)
+	public XmlOutput use(Schema<?> schema)
     {
         this.schema = schema;
+        xmlAttributeOutput.use(schema);
+        xmlFieldOutput.use(schema);
+        xmlValueOutput.use(schema);
         return this;
     }
 
@@ -59,127 +69,101 @@ public final class XmlOutput implements Output, StatefulOutput
         if (lastSchema != null && lastSchema == this.schema)
         {
             this.schema = schema;
+            xmlAttributeOutput.updateLast(schema, lastSchema);
+            xmlFieldOutput.updateLast(schema, lastSchema);
+            xmlValueOutput.updateLast(schema, lastSchema);
         }
     }
 
-    private static void write(final XMLStreamWriter writer, final String name,
-            final String value) throws IOException
-    {
-        try
-        {
-            writer.writeStartElement(name);
-            writer.writeCharacters(value);
-            writer.writeEndElement();
-        }
-        catch (XMLStreamException e)
-        {
-            throw new XmlOutputException(e);
-        }
-    }
-
-    private static void writeB64Encoded(final XMLStreamWriter writer, final String name,
-            final char[] value) throws IOException
-    {
-        try
-        {
-            writer.writeStartElement(name);
-            writer.writeCharacters(value, 0, value.length);
-            writer.writeEndElement();
-        }
-        catch (XMLStreamException e)
-        {
-            throw new XmlOutputException(e);
-        }
-    }
 
     @Override
     public void writeInt32(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+    	xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeUInt32(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeSInt32(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeFixed32(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeSFixed32(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeInt64(int fieldNumber, long value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
     }
 
     @Override
     public void writeUInt64(int fieldNumber, long value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
     }
 
     @Override
     public void writeSInt64(int fieldNumber, long value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
     }
 
     @Override
     public void writeFixed64(int fieldNumber, long value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
     }
 
     @Override
     public void writeSFixed64(int fieldNumber, long value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Long.toString(value));
     }
 
     @Override
     public void writeFloat(int fieldNumber, float value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Float.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Float.toString(value));
     }
 
     @Override
     public void writeDouble(int fieldNumber, double value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Double.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Double.toString(value));
     }
 
     @Override
     public void writeBool(int fieldNumber, boolean value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), String.valueOf(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), String.valueOf(value));
     }
 
     @Override
     public void writeEnum(int fieldNumber, int value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), Integer.toString(value));
     }
 
     @Override
     public void writeString(int fieldNumber, String value, boolean repeated) throws IOException
     {
-        write(writer, schema.getFieldName(fieldNumber), value);
+        xmlFieldOutput.write(writer, schema.getFieldName(fieldNumber), value);
     }
 
     @Override
@@ -191,7 +175,7 @@ public final class XmlOutput implements Output, StatefulOutput
     @Override
     public void writeByteArray(int fieldNumber, byte[] value, boolean repeated) throws IOException
     {
-        writeB64Encoded(writer, schema.getFieldName(fieldNumber),
+    	xmlFieldOutput.writeB64Encoded(writer, schema.getFieldName(fieldNumber),
                 value.length == 0 ? EMPTY : B64Code.cencode(value));
     }
 
@@ -205,7 +189,7 @@ public final class XmlOutput implements Output, StatefulOutput
         }
         else
         {
-            writeB64Encoded(writer, schema.getFieldName(fieldNumber),
+        	xmlFieldOutput.writeB64Encoded(writer, schema.getFieldName(fieldNumber),
                     length == 0 ? EMPTY : B64Code.cencode(value, offset, length));
         }
     }
@@ -215,7 +199,7 @@ public final class XmlOutput implements Output, StatefulOutput
             final boolean repeated) throws IOException
     {
         final Schema<?> lastSchema = this.schema;
-        this.schema = schema;
+        this.use(schema);
 
         final XMLStreamWriter writer = this.writer;
         try
@@ -232,7 +216,7 @@ public final class XmlOutput implements Output, StatefulOutput
         }
 
         // restore state
-        this.schema = lastSchema;
+        this.updateLast(lastSchema, schema);
     }
 
     @Override
@@ -241,4 +225,15 @@ public final class XmlOutput implements Output, StatefulOutput
         writeByteRange(false, fieldNumber, value.array(), value.arrayOffset() + value.position(),
                 value.remaining(), repeated);
     }
+    
+    public XmlAttributeOutput getXmlAttributeOutput() 
+    {
+    	return xmlAttributeOutput;
+    }
+
+    public XmlValueOutput getXmlValueOutput() 
+    {
+    	return xmlValueOutput;
+    }
+
 }

@@ -373,6 +373,12 @@ public abstract class PolymorphicMapSchema extends PolymorphicSchema
         }
 
         strategy.MAP_SCHEMA.writeTo(output, (Map<Object, Object>) value);
+        if (output instanceof StatefulOutput)
+        {
+            // update using the derived schema.
+            ((StatefulOutput) output).use(currentSchema);
+        }
+
     }
 
     static void writeNonPublicMapTo(Output output, Object value,
@@ -902,6 +908,12 @@ public abstract class PolymorphicMapSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.MAP_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
             case ID_MAP:
                 strategy.transferMapId(input, output, number);
@@ -914,6 +926,12 @@ public abstract class PolymorphicMapSchema extends PolymorphicSchema
                 }
 
                 Pipe.transferDirect(strategy.MAP_PIPE_SCHEMA, pipe, input, output);
+                if (output instanceof StatefulOutput)
+                {
+                    // update using the derived schema.
+                    ((StatefulOutput) output).use(pipeSchema);
+                }
+
                 return;
 
             default:

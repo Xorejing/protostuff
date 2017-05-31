@@ -14,6 +14,7 @@
 
 package io.protostuff;
 
+import static javax.xml.stream.XMLStreamConstants.ATTRIBUTE;
 import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -37,6 +38,8 @@ public final class XmlInput implements Input
 
     private final XMLStreamReader parser;
     private boolean emptyMessage = false;
+	private int attributeCount = 0;
+	private int attributeIndex = -1;
 
     public XmlInput(XMLStreamReader parser)
     {
@@ -55,11 +58,33 @@ public final class XmlInput implements Input
         }
     }
 
-    private int nextTag() throws IOException
+    int nextTag() throws IOException
     {
         try
         {
-            return parser.nextTag();
+			if (END_ELEMENT == parser.getEventType()) 
+			{
+				if (0 < attributeCount && -1 == attributeIndex)
+				{
+					// xmlValue
+					return parser.getEventType();
+				}
+				return parser.nextTag();
+			}
+			attributeCount = parser.getAttributeCount();
+			if (0 == attributeCount) 
+			{
+				return parser.nextTag();
+			}
+
+			// element has attributes
+			attributeIndex = attributeIndex + 1;
+			if (attributeCount == attributeIndex) {
+				attributeIndex = -1;
+			}
+			// stay put while parsing the attributes
+			return parser.getEventType();
+
         }
         catch (XMLStreamException e)
         {
@@ -80,10 +105,12 @@ public final class XmlInput implements Input
                                 parser.getTextStart(), parser.getTextLength());
 
                         while (END_ELEMENT != parser.next())
-                            ;
+                        {
+                        // noop
+                        }
 
                         // move to next element
-                        parser.nextTag();
+                        nextTag();
 
                         return decoded;
 
@@ -91,7 +118,7 @@ public final class XmlInput implements Input
                         // empty bytestring
 
                         // move to next element
-                        parser.nextTag();
+                        nextTag();
 
                         return EMPTY;
 
@@ -110,9 +137,10 @@ public final class XmlInput implements Input
     {
         try
         {
-            final String text = parser.getElementText();
+			final String text = -1 == attributeIndex ? parser.getElementText()
+					: parser.getAttributeValue(attributeIndex);
             // move to next element
-            parser.nextTag();
+            nextTag();
             return text;
         }
         catch (XMLStreamException e)
@@ -124,11 +152,15 @@ public final class XmlInput implements Input
     @Override
     public <T> void handleUnknownField(int fieldNumber, Schema<T> schema) throws IOException
     {
-        final String name = parser.getLocalName();
+		final String name = -1 == attributeIndex ? parser.getLocalName() : parser.getAttributeLocalName(attributeIndex);
         while (true)
         {
             switch (next())
             {
+            	case ATTRIBUTE:
+            		// we can skip this unknown attribute field.
+            		nextTag();
+            		return;
                 case END_ELEMENT:
                     if (name.equals(parser.getLocalName()))
                     {
@@ -145,6 +177,8 @@ public final class XmlInput implements Input
                     // we do not know how deep this message is
                     throw new XmlInputException("Unknown field: " + name + " on message " +
                             schema.messageFullName());
+                default:
+                	continue;
             }
         }
     }
@@ -161,15 +195,33 @@ public final class XmlInput implements Input
         if (parser.getEventType() == END_ELEMENT)
             return 0;
 
-        final String name = parser.getLocalName();
-        final int num = schema.getFieldNumber(name);
+		final String name = -1 == attributeIndex ? parser.getLocalName() : parser.getAttributeLocalName(attributeIndex);
+		final int num = (-1 == attributeIndex && 0 < attributeCount) ? schema.getFieldNumber(schema.typeClass().getSimpleName())
+				:  schema.getFieldNumber(name);
 
         if (num == 0)
         {
+        	if(0 < attributeCount) 
+        	{
+        		attributeCount = 0;
+        		// no xmlValue
+        		try 
+        		{
+					parser.nextTag();
+					return readFieldNumber(schema);
+				} catch (XMLStreamException e) 
+        		{
+					throw new IOException(e);
+				}
+        	}
             while (true)
             {
                 switch (next())
                 {
+                	case ATTRIBUTE:
+                		// we can skip this unknown attribute field.
+                		nextTag();
+                		return readFieldNumber(schema);
                     case END_ELEMENT:
                         if (name.equals(parser.getLocalName()))
                         {
@@ -186,6 +238,8 @@ public final class XmlInput implements Input
                         // we do not know how deep this message is
                         throw new XmlInputException("Unknown field: " + name + " on message " +
                                 schema.messageFullName());
+                    default:
+                    	continue;
                 }
             }
         }
