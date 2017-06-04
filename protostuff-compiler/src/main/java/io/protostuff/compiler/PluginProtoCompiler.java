@@ -66,21 +66,33 @@ public class PluginProtoCompiler extends STCodeGenerator {
 		public StringTemplateGroup resolveSTG(String stgLocation) {
 			try {
 				File file = new File(stgLocation);
-				if (file.exists())
-					try (Reader reader = new BufferedReader(new FileReader(file));) {
+				if (file.exists()) {
+					Reader reader = null;
+					try {
+						reader = new BufferedReader(new FileReader(file));
 						return new StringTemplateGroup(reader);
+					} finally {
+						if(null != reader) reader.close();
 					}
-
+				}
 				URL url = DefaultProtoLoader.getResource(stgLocation, PluginProtoCompiler.class);
 				if (url != null) {
-					try (Reader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));) {
+					Reader reader = null;
+					try {
+						reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
 						return new StringTemplateGroup(reader);
+					} finally {
+						if(null != reader) reader.close();						
 					}
 				}
 				if (stgLocation.startsWith("http://")) {
-					try (Reader reader = new BufferedReader(
-							new InputStreamReader(new URL(stgLocation).openStream(), "UTF-8"))) {
+					Reader reader = null;
+					try {
+						reader = new BufferedReader(
+								new InputStreamReader(new URL(stgLocation).openStream(), "UTF-8"));
 						return new StringTemplateGroup(reader);
+					} finally {
+						if(null != reader) reader.close();												
 					}
 				}
 			} catch (IOException e) {
@@ -256,8 +268,12 @@ public class PluginProtoCompiler extends STCodeGenerator {
 
 	private void compileServiceBlock(ProtoModule module, Service service, String packageName, String fileName,
 			StringTemplate serviceBlockTemplate) throws IOException {
-		try (Writer writer = CompilerUtil.newWriter(module, packageName, fileName);) {
+		Writer writer = null;
+		try {
+			writer = CompilerUtil.newWriter(module, packageName, fileName);
 			compileServiceBlockTo(writer, module, service, serviceBlockTemplate);
+		} finally {
+			if(null != writer) writer.close();
 		}
 	}
 
@@ -275,8 +291,12 @@ public class PluginProtoCompiler extends STCodeGenerator {
 
 	public static void compileEnumBlock(ProtoModule module, EnumGroup eg, String packageName, String fileName,
 			StringTemplate enumBlockTemplate) throws IOException {
-		try (Writer writer = CompilerUtil.newWriter(module, packageName, fileName);) {
+		Writer writer = null;
+		try {
+			writer = CompilerUtil.newWriter(module, packageName, fileName);
 			compileEnumBlockTo(writer, module, eg, enumBlockTemplate);
+		} finally {
+			if(null != writer) writer.close();			
 		}
 	}
 
@@ -294,8 +314,12 @@ public class PluginProtoCompiler extends STCodeGenerator {
 
 	public static void compileMessageBlock(ProtoModule module, Message message, String packageName, String fileName,
 			StringTemplate messageBlockTemplate) throws IOException {
-		try (Writer writer = CompilerUtil.newWriter(module, packageName, fileName);) {
+		Writer writer = null;
+		try {
+			writer = CompilerUtil.newWriter(module, packageName, fileName);
 			compileMessageBlockTo(writer, module, message, messageBlockTemplate);
+		} finally {
+			if(null != writer) writer.close();			
 		}
 	}
 
@@ -338,8 +362,9 @@ public class PluginProtoCompiler extends STCodeGenerator {
 			fileName = resolveFileName(name);
 		}
 
-		try (Writer writer = CompilerUtil.newWriter(module, packageName, fileName);) {
-
+		Writer writer = null;
+		try {
+			writer = CompilerUtil.newWriter(module, packageName, fileName);
 			AutoIndentWriter out = new AutoIndentWriter(writer);
 
 			StringTemplate protoBlock = protoBlockTemplate.getInstanceOf();
@@ -348,6 +373,8 @@ public class PluginProtoCompiler extends STCodeGenerator {
 			protoBlock.setAttribute("options", module.getOptions());
 
 			protoBlock.write(out);
+		} finally {
+			if(null != writer) writer.close();			
 		}
 	}
 

@@ -20,7 +20,7 @@
     <dependency>
       <groupId>io.protostuff</groupId>
       <artifactId>protostuff-runtime</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}-xmlbinding</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

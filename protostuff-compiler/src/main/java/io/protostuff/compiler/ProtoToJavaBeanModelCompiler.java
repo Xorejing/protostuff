@@ -56,7 +56,9 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 			if (eg.getAnnotation("Transient") != null)
 				continue;
 
-			try (Writer writer = CompilerUtil.newWriter(module, javaPackageName, eg.getName() + ".java");) {
+			Writer writer = null;
+			try {
+				writer = CompilerUtil.newWriter(module, javaPackageName, eg.getName() + ".java");
 				AutoIndentWriter out = new AutoIndentWriter(writer);
 
 				StringTemplate enumBlock = schemaTemplateGroup.getInstanceOf("enum_block");
@@ -65,6 +67,8 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 				enumBlock.setAttribute("options", module.getOptions());
 
 				enumBlock.write(out);
+			} finally {
+				if(null != writer) writer.close();			
 			}
 		}
 
@@ -88,7 +92,9 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 					modelName = modelFullName.substring(lastDotIndex + 1);
 				}
 
-				try (Writer writer = CompilerUtil.newWriter(module, modelPackage, modelName + ".java");) {
+				Writer writer = null;
+				try {
+					writer = CompilerUtil.newWriter(module, modelPackage, modelName + ".java");
 					AutoIndentWriter out = new AutoIndentWriter(writer);
 
 					StringTemplate messageBlock = modelTemplateGroup.getInstanceOf("message_block");
@@ -97,13 +103,17 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 					messageBlock.setAttribute("options", module.getOptions());
 
 					messageBlock.write(out);
+				} finally {
+					if(null != writer) writer.close();			
 				}
 			}
 
 			// Generate schema
 			{
-				try (Writer writer = CompilerUtil.newWriter(module, javaPackageName,
-						getRemoteModelSchemaName(schemaTemplateGroup, m) + ".java");) {
+				Writer writer = null;
+				try {
+					writer = CompilerUtil.newWriter(module, javaPackageName,
+							getRemoteModelSchemaName(schemaTemplateGroup, m) + ".java");
 					AutoIndentWriter out = new AutoIndentWriter(writer);
 
 					StringTemplate messageBlock = schemaTemplateGroup.getInstanceOf("message_block");
@@ -112,6 +122,8 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 					messageBlock.setAttribute("options", module.getOptions());
 
 					messageBlock.write(out);
+				} finally {
+					if(null != writer) writer.close();			
 				}
 			}
 		}
@@ -148,7 +160,9 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 	}
 
 	public String getRemoteModelName(StringTemplateGroup group, Message message) throws IOException {
-		try (StringWriter writer = new StringWriter(16);) {
+		StringWriter writer = null;
+		try {
+			writer = new StringWriter(16);
 			NoIndentWriter out = new NoIndentWriter(writer);
 
 			StringTemplate messageBlock = group.getInstanceOf("remote_model_name");
@@ -159,11 +173,15 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 			String result = writer.toString();
 
 			return result;
+		} finally {
+//			if(null != writer) writer.close();			
 		}
 	}
 
 	public String getRemoteModelSchemaName(StringTemplateGroup group, Message message) throws IOException {
-		try (StringWriter writer = new StringWriter(16);) {
+		StringWriter writer = null;
+		try {
+			writer = new StringWriter(16);
 			NoIndentWriter out = new NoIndentWriter(writer);
 
 			StringTemplate messageBlock = group.getInstanceOf("remote_model_schema_name");
@@ -174,6 +192,8 @@ public class ProtoToJavaBeanModelCompiler extends STCodeGenerator {
 			String result = writer.toString();
 
 			return result;
+		} finally {
+//			if(null != writer) writer.close();			
 		}
 	}
 }

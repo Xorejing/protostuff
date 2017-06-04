@@ -55,7 +55,9 @@ public class ProtoToJavaBeanCompiler extends STCodeGenerator {
 	protected void writeMessages(ProtoModule module, Proto proto, String javaPackageName, StringTemplateGroup group)
 			throws IOException {
 		for (Message m : proto.getMessages()) {
-			try (Writer writer = CompilerUtil.newWriter(module, javaPackageName, m.getName() + ".java");) {
+			Writer writer = null;
+			try {
+				writer = CompilerUtil.newWriter(module, javaPackageName, m.getName() + ".java");
 				AutoIndentWriter out = new AutoIndentWriter(writer);
 
 				StringTemplate messageBlock = group.getInstanceOf("message_block");
@@ -64,6 +66,8 @@ public class ProtoToJavaBeanCompiler extends STCodeGenerator {
 				messageBlock.setAttribute("options", module.getOptions());
 
 				messageBlock.write(out);
+			} finally {
+				if(null != writer) writer.close();			
 			}
 		}
 	}
@@ -71,7 +75,9 @@ public class ProtoToJavaBeanCompiler extends STCodeGenerator {
 	protected void writeEnums(ProtoModule module, Proto proto, String javaPackageName, StringTemplateGroup group)
 			throws IOException {
 		for (EnumGroup eg : proto.getEnumGroups()) {
-			try (Writer writer = CompilerUtil.newWriter(module, javaPackageName, eg.getName() + ".java");) {
+			Writer writer = null;
+			try {
+				writer = CompilerUtil.newWriter(module, javaPackageName, eg.getName() + ".java");
 				AutoIndentWriter out = new AutoIndentWriter(writer);
 
 				StringTemplate enumBlock = group.getInstanceOf("enum_block");
@@ -80,6 +86,8 @@ public class ProtoToJavaBeanCompiler extends STCodeGenerator {
 				enumBlock.setAttribute("options", module.getOptions());
 
 				enumBlock.write(out);
+			} finally {
+				if(null != writer) writer.close();			
 			}
 		}
 	}

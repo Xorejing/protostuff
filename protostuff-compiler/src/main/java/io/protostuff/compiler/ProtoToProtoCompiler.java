@@ -52,8 +52,11 @@ public class ProtoToProtoCompiler extends STCodeGenerator {
 		String src = module.getSource().getAbsolutePath();
 		String path = proto.getFile().getAbsolutePath().replace(src, "").replace(proto.getFile().getName(), "");
 
-		try (Writer writer = CompilerUtil.newWriter(module, path, proto.getFile().getName());
-				BufferedReader reader = new BufferedReader(new FileReader(proto.getFile()));) {
+		Writer writer = null;
+		BufferedReader reader = null;
+		try {
+			writer = CompilerUtil.newWriter(module, path, proto.getFile().getName());
+			reader = new BufferedReader(new FileReader(proto.getFile()));
 			// Read proto file in a buffer
 			StringBuilder builder = new StringBuilder();
 
@@ -98,6 +101,8 @@ public class ProtoToProtoCompiler extends STCodeGenerator {
 
 			writer.write(data);
 		} finally {
+			if(null != reader) reader.close();			
+			if(null != writer) writer.close();			
 		}
 	}
 

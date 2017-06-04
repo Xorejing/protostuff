@@ -63,10 +63,18 @@ public final class CompilerMain {
 
 	static Properties propsFrom(File file) {
 		Properties props = new Properties();
-		try (InputStream stream = new FileInputStream(file)) {
+		InputStream stream = null;
+		try {
+			stream = new FileInputStream(file);
 			props.load(stream);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (null != stream)
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 		}
 
 		return props;
@@ -79,10 +87,18 @@ public final class CompilerMain {
 
 	public static List<ProtoModule> loadModules(File file, File baseDirForSource, File baseDirForOutput) {
 		Properties props = new Properties();
-		try (InputStream stream = new FileInputStream(file)) {
+		InputStream stream = null;
+		try {
+			stream = new FileInputStream(file);
 			props.load(stream);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (null != stream)
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 		}
 
 		return loadModules(props, baseDirForSource, baseDirForOutput);

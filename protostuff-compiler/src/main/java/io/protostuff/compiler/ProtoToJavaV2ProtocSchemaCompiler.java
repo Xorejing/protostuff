@@ -49,8 +49,9 @@ public class ProtoToJavaV2ProtocSchemaCompiler extends STCodeGenerator {
 		StringTemplateGroup group = getSTG(getOutputId());
 
 		String fileName = resolveFileName(proto);
-		try (Writer writer = CompilerUtil.newWriter(module, javaPackageName, "Schema" + fileName + ".java");) {
-
+		Writer writer = null;
+		try {
+			writer = CompilerUtil.newWriter(module, javaPackageName, "Schema" + fileName + ".java");
 			AutoIndentWriter out = new AutoIndentWriter(writer);
 			StringTemplate protoOuterBlock = group.getInstanceOf("proto_block");
 
@@ -59,6 +60,8 @@ public class ProtoToJavaV2ProtocSchemaCompiler extends STCodeGenerator {
 			protoOuterBlock.setAttribute("options", module.getOptions());
 
 			protoOuterBlock.write(out);
+		} finally {
+			if(null != writer) writer.close();			
 		}
 	}
 
