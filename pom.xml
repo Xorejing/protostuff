@@ -407,7 +407,7 @@
 											<pluginExecutionFilter>
 												<groupId>io.protostuff</groupId>
 												<artifactId>protostuff-maven-plugin</artifactId>
-												<versionRange>[1.5.3,)</versionRange>
+												<versionRange>[${project.version},)</versionRange>
 												<goals>
 													<goal>compile</goal>
 												</goals>

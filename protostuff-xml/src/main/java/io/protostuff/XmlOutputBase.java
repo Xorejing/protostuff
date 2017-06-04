@@ -28,7 +28,7 @@ import io.protostuff.StringSerializer.STRING;
  * @author David Yu
  * @created May 24, 2010
  */
-public abstract class XmlOutputBase implements StatefulOutput
+public abstract class XmlOutputBase implements StatefulXmlOutput
 {
 
     static final char[] EMPTY = new char[0];

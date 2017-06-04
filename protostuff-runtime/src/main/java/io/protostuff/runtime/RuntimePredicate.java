@@ -3,34 +3,64 @@
  */
 package io.protostuff.runtime;
 
-import io.protostuff.Input;
-import io.protostuff.Output;
-
 /**
- * @author marug
+ * 
  *
  */
-public interface RuntimePredicate<T> 
+public interface RuntimePredicate<T, M> 
 {
 
-	public boolean apply(Input input, T message);
-	
-	public boolean apply(Output output, T message);
-	
-	public Output getAttributeOutput(Output output);
+	   /**
+     * Returns true if the field is included.
+     */
+    public boolean apply(T field);
 
-	public Output getValueOutput(Output output);
-
-	public interface Factory<T> 
-	{
-		/**
-		 * Creates a new predicate based from the args.
-		 * 
-		 * @param args
-		 * 
-		 * @return a new predicate based from the args.
-		 */
-		public RuntimePredicate<T> create(String[] args);
-	}
+    /**
+     * Returns true if the field is included.
+     * <p>
+     * The predicate logic can be dynamic based on the contents of the message.
+     */
+    public boolean apply(T field, M message);
+    
+    /**
+     * skip the @Deprecated fields while preserving the field number
+     * 
+     * @param field
+     * @return
+     */
+    public boolean skipDeprecated(T field);
+    
+    /**
+     * retrieve the fieldMap name to use
+     * 
+     * @param field
+     * 
+     * @return the fieldMap name to use
+     */
+    public String getFieldName(T field);
+    
+    /**
+     * retrieve the field number to use
+     * 
+     * @param field
+     * 
+     * @return the field number to use
+     */
+    public int getFieldMapping(T field);
+    
+    /**
+     * provides the recipe for creating {@link Field} descriptions
+     * 
+     * @return a protostuff Field description
+     */
+    public Field<M> createField(T field, int fieldMapping, IdStrategy strategy);
+    
+    public interface Factory<T, M>
+    {
+        /**
+         * Creates a new predicate based from the args.
+         */
+        public RuntimePredicate<T, M> create(String[] args);
+    }
 
 }

@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamReader;
  * @author David Yu
  * @created May 24, 2010
  */
-public final class XmlInput implements Input
+public final class XmlInput implements StatefulInput
 {
     private static final byte[] EMPTY = new byte[0];
 

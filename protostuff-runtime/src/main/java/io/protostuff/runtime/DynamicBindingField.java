@@ -14,34 +14,33 @@ import javax.xml.bind.annotation.XmlValue;
 import io.protostuff.Input;
 import io.protostuff.Output;
 import io.protostuff.Pipe;
+import io.protostuff.StatefulInput;
+import io.protostuff.StatefulXmlOutput;
 import io.protostuff.Tag;
 
 /**
- * double and dynamic field mapping 
- * 
- * the additional mapping is used when the provided {@link RuntimePredicate} applies
+ * dynamic field mapping for stateful xml output 
  * 
  * @author marug
  * 
  */
-public class DynamicBindingField<T> extends Field<T> {
+public class DynamicBindingField<T> extends Field<T> 
+{
 
 	public final Field<T> delegate;
 	public final Field<T> dynamicField;
 	
-	private final RuntimePredicate<T> predicate;
 	private final boolean fieldIsAttribute;
 	private final boolean fieldIsValue;
 
 	public DynamicBindingField(final Field<T> field, final Field<T> aliasField, final boolean isXmlAttribute,
-			final boolean isXmlValue, final RuntimePredicate<T> xmlPredicate) 
+			final boolean isXmlValue) 
 	{
 		super(field.type, field.number, field.name, field.repeated, createTag(field.groupFilter));
 		delegate = field;
 		dynamicField = aliasField;
 		fieldIsAttribute = isXmlAttribute;
 		fieldIsValue = isXmlValue;
-		predicate = xmlPredicate;
 	}
 
 	/**
@@ -51,14 +50,15 @@ public class DynamicBindingField<T> extends Field<T> {
 	@Override
 	protected void writeTo(Output output, T message) throws IOException 
 	{
-		if(predicate.apply(output, message)) 
+		if(output instanceof StatefulXmlOutput) 
 		{
+			StatefulXmlOutput statefuloutput = (StatefulXmlOutput) output;
 			if(fieldIsAttribute) 
 			{
-				dynamicField.writeTo(predicate.getAttributeOutput(output), message);
+				dynamicField.writeTo(statefuloutput.getAttributeOutput(), message);
 			} else if(fieldIsValue)
 			{
-				dynamicField.writeTo(predicate.getValueOutput(output), message);
+				dynamicField.writeTo(statefuloutput.getValueOutput(), message);
 			} else 
 			{
 				dynamicField.writeTo(output, message);
@@ -76,7 +76,7 @@ public class DynamicBindingField<T> extends Field<T> {
 	@Override
 	protected void mergeFrom(Input input, T message) throws IOException 
 	{
-		if(predicate.apply(input, message)) 
+		if(input instanceof StatefulInput) 
 		{
 			dynamicField.mergeFrom(input, message);
 		} else 

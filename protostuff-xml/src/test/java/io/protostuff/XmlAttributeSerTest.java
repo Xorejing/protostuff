@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeSchema;
+import io.protostuff.runtime.RuntimeXmlBinding;
 
 /**
  * @author marug
@@ -45,114 +46,116 @@ public class XmlAttributeSerTest {
 
 	@Test
 	public void shouldSerBazXml() throws IOException {
-        Baz target = new Baz();
-        XmlIOUtil.mergeFrom(tests.get("baz-no-attributes.xml"), target, target.cachedSchema());
-        String expected = new String(tests.get("baz-no-attributes.xml"))
-        		.replaceAll("\\s+", " ").replace("> <", "><").trim();
+		Baz target = new Baz();
+		XmlIOUtil.mergeFrom(tests.get("baz-no-attributes.xml"), target, target.cachedSchema());
+		String expected = new String(tests.get("baz-no-attributes.xml")).replaceAll("\\s+", " ").replace("> <", "><")
+		        .trim();
 
-        StringWriter writer = new StringWriter();
-		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new XmlRuntimePredicateFactory<Baz>(), 
-				new DefaultIdStrategy());
-        
-        XmlIOUtil.writeTo(writer, target, bazSchema);
-        assertTrue(expected.equals(writer.toString().substring(writer.toString().indexOf("?>")+2)));
+		StringWriter writer = new StringWriter();
+		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new RuntimeXmlBinding<Baz>().create(null),
+		        new DefaultIdStrategy());
+
+		XmlIOUtil.writeTo(writer, target, bazSchema);
+		assertTrue(expected.equals(writer.toString().substring(writer.toString().indexOf("?>") + 2)));
 	}
 
 	@Test
 	public void shouldSerBazXml1() throws IOException, XMLStreamException, FactoryConfigurationError {
-        Baz target = new Baz();
-        XmlIOUtil.mergeFrom(tests.get("baz-one-attribute.xml"), target, target.cachedSchema());
-        String expected = new String(tests.get("baz-one-attribute.xml"))
-        		.replaceAll("\\s+", " ").replace("> <", "><").trim();
+		Baz target = new Baz();
+		XmlIOUtil.mergeFrom(tests.get("baz-one-attribute.xml"), target, target.cachedSchema());
+		@SuppressWarnings("unused")
+		String expected = new String(tests.get("baz-one-attribute.xml")).replaceAll("\\s+", " ").replace("> <", "><")
+		        .trim();
 
-        StringWriter writer = new StringWriter();
-		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new XmlRuntimePredicateFactory<Baz>(), 
-				new DefaultIdStrategy());
-		
+		StringWriter writer = new StringWriter();
+		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new RuntimeXmlBinding<Baz>().create(null),
+		        new DefaultIdStrategy());
+
 		XMLStreamWriter xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-		
-        XmlIOUtil.writeTo(xmlWriter, target, bazSchema);
-        String result = writer.toString();
-        assertTrue(result.contains("<id>1</id>"));
+
+		XmlIOUtil.writeTo(xmlWriter, target, bazSchema);
+		String result = writer.toString();
+		assertTrue(result.contains("<id>1</id>"));
 	}
 
 	@Test
 	public void shouldSerBazXml2() throws IOException, XMLStreamException, FactoryConfigurationError {
-        Baz target = new Baz();
-        XmlIOUtil.mergeFrom(tests.get("baz-two-attributes.xml"), target, target.cachedSchema());
-        String expected = new String(tests.get("baz-two-attributes.xml"))
-        		.replaceAll("\\s+", " ").replace("> <", "><").trim();
+		Baz target = new Baz();
+		XmlIOUtil.mergeFrom(tests.get("baz-two-attributes.xml"), target, target.cachedSchema());
+		@SuppressWarnings("unused")
+		String expected = new String(tests.get("baz-two-attributes.xml")).replaceAll("\\s+", " ").replace("> <", "><")
+		        .trim();
 
-        StringWriter writer = new StringWriter();
-		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new XmlRuntimePredicateFactory<Baz>(), 
-				new DefaultIdStrategy());
-		
+		StringWriter writer = new StringWriter();
+		Schema<Baz> bazSchema = RuntimeSchema.createFrom(Baz.class, new RuntimeXmlBinding<Baz>().create(null),
+		        new DefaultIdStrategy());
+
 		XMLStreamWriter xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-		
-        XmlIOUtil.writeTo(xmlWriter, target, bazSchema);
-        String result = writer.toString();
-        assertTrue(result.contains("<id>2</id>"));
+
+		XmlIOUtil.writeTo(xmlWriter, target, bazSchema);
+		String result = writer.toString();
+		assertTrue(result.contains("<id>2</id>"));
 	}
 
 	@Test
 	public void shouldSerBarXml() throws IOException {
 		Bar target = new Bar();
 		XmlIOUtil.mergeFrom(tests.get("bar.xml"), target, target.cachedSchema());
-        String expected = new String(tests.get("bar.xml")).replaceAll("\\s+", " ").replace("> <", "><");
+		String expected = new String(tests.get("bar.xml")).replaceAll("\\s+", " ").replace("> <", "><");
 
-        StringWriter writer = new StringWriter();
-		Schema<Bar> barSchema = RuntimeSchema.createFrom(Bar.class, new XmlRuntimePredicateFactory<Bar>(), 
-				new DefaultIdStrategy());
-        
-        XmlIOUtil.writeTo(writer, target, barSchema);
-        String result = writer.toString().substring(writer.toString().indexOf("?>")+2);
-        System.out.println(expected);
-        System.out.println(result);
-        System.out.println();
-        assertTrue(result.contains("<id>1</id>"));
-        assertTrue(result.contains("<timestamp>567</timestamp>" ));
-        assertTrue(result.contains("<name>one-attribute</name>"));
+		StringWriter writer = new StringWriter();
+		Schema<Bar> barSchema = RuntimeSchema.createFrom(Bar.class, new RuntimeXmlBinding<Bar>().create(null),
+		        new DefaultIdStrategy());
+
+		XmlIOUtil.writeTo(writer, target, barSchema);
+		String result = writer.toString().substring(writer.toString().indexOf("?>") + 2);
+		System.out.println(expected);
+		System.out.println(result);
+		System.out.println();
+		assertTrue(result.contains("<id>1</id>"));
+		assertTrue(result.contains("<timestamp>567</timestamp>"));
+		assertTrue(result.contains("<name>one-attribute</name>"));
 	}
 
 	@Test
 	public void shouldSerFooValueXml() throws XmlOutputException, IOException, XMLStreamException {
 		FooValue target = new FooValue();
-		Schema<FooValue> schema = RuntimeSchema.createFrom(FooValue.class, new XmlRuntimePredicateFactory<FooValue>(), 
-				new DefaultIdStrategy());
-        XmlIOUtil.mergeFrom(tests.get("foovalue.xml"), target, schema);
-        String expected = new String(tests.get("foovalue.xml")).replaceAll("\\s+", " ").replace("> <", "><").trim();
-		
-        StringWriter writer = new StringWriter();
+		Schema<FooValue> schema = RuntimeSchema.createFrom(FooValue.class,
+		        new RuntimeXmlBinding<FooValue>().create(null), new DefaultIdStrategy());
+		XmlIOUtil.mergeFrom(tests.get("foovalue.xml"), target, schema);
+		String expected = new String(tests.get("foovalue.xml")).replaceAll("\\s+", " ").replace("> <", "><").trim();
+
+		StringWriter writer = new StringWriter();
 		XMLStreamWriter xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-		
-        XmlIOUtil.writeTo(xmlWriter, target, schema);
-        assertTrue(expected.equals(writer.toString()));
-		
+
+		XmlIOUtil.writeTo(xmlWriter, target, schema);
+		assertTrue(expected.equals(writer.toString()));
+
 	}
 
 	@Test
-	public void shouldSerBarValueXml() throws XMLStreamException, FactoryConfigurationError, XmlOutputException, IOException {
+	public void shouldSerBarValueXml()
+	        throws XMLStreamException, FactoryConfigurationError, XmlOutputException, IOException {
 		DefaultIdStrategy idStrategy = new DefaultIdStrategy();
-		Schema<FooValue> fooValueSchema = RuntimeSchema.createFrom(FooValue.class, new XmlRuntimePredicateFactory<FooValue>(), 
-				idStrategy);
+		Schema<FooValue> fooValueSchema = RuntimeSchema.createFrom(FooValue.class,
+		        new RuntimeXmlBinding<FooValue>().create(null), idStrategy);
 		idStrategy.registerPojo(FooValue.class, fooValueSchema);
 
 		BarValue target = new BarValue();
-		Schema<BarValue> schema = RuntimeSchema.createFrom(BarValue.class, new XmlRuntimePredicateFactory<BarValue>(), 
-				idStrategy);
-        XmlIOUtil.mergeFrom(tests.get("barvalue.xml"), target, schema);
-        String expected = new String(tests.get("barvalue.xml"),Charset.forName("utf-8"))
-        		.replaceAll("\\s+", " ").replace("> <", "><").trim();
+		Schema<BarValue> schema = RuntimeSchema.createFrom(BarValue.class,
+		        new RuntimeXmlBinding<BarValue>().create(null), idStrategy);
+		XmlIOUtil.mergeFrom(tests.get("barvalue.xml"), target, schema);
+		String expected = new String(tests.get("barvalue.xml"), Charset.forName("utf-8")).replaceAll("\\s+", " ")
+		        .replace("> <", "><").trim();
 
-        StringWriter writer = new StringWriter();
+		StringWriter writer = new StringWriter();
 		XMLStreamWriter xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-		
-        XmlIOUtil.writeTo(xmlWriter, target, schema);
-        assertTrue(expected.equals(writer.toString()));
+
+		XmlIOUtil.writeTo(xmlWriter, target, schema);
+		assertTrue(expected.equals(writer.toString()));
 
 	}
-	
-	
+
 	private static Map<String, byte[]> readTests(String testDir) throws IOException {
 		Map<String, byte[]> tests = new HashMap<String, byte[]>();
 		String[] testfiles = new File(testDir).list(new FilenameFilter() {

@@ -46,4 +46,14 @@ public class XmlValueOutput extends XmlOutputBase {
 		XmlOutputBase.writeB64EncodedValue(writer, name, value);
 	}
 
+	@Override
+	public StatefulXmlOutput getAttributeOutput() {
+		throw new RuntimeException("Wrong output access");
+	}
+
+	@Override
+	public StatefulXmlOutput getValueOutput() {
+		return this;
+	}
+
 }

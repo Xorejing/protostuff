@@ -34,7 +34,6 @@ import io.protostuff.Message;
 import io.protostuff.Output;
 import io.protostuff.Pipe;
 import io.protostuff.Schema;
-import io.protostuff.Tag;
 import io.protostuff.runtime.RuntimeEnv.DefaultInstantiator;
 import io.protostuff.runtime.RuntimeEnv.Instantiator;
 
@@ -192,7 +191,7 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
      * 
      */
     public static <T> RuntimeSchema<T> createFrom(Class<T> typeClass,
-    		RuntimePredicate.Factory<T> view, IdStrategy strategy)
+    		RuntimePredicate<java.lang.reflect.Field, T> predicate, IdStrategy strategy)
     {
         if (typeClass.isInterface()
                 || Modifier.isAbstract(typeClass.getModifiers()))
@@ -206,40 +205,30 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
         final ArrayList<Field<T>> fields = new ArrayList<Field<T>>(
                 fieldMap.size());
 
-        int i = 0;
+        final RuntimePredicate<java.lang.reflect.Field, T> tagged = new RuntimeFieldsTagged<T>()
+        		.create(new String[]{ typeClass.getCanonicalName(), 
+        				String.valueOf(!fieldMap.isEmpty())});
+
         int xmlValueFieldNumber = 0;
         String xmlValueFieldName = "";
+        
         for (java.lang.reflect.Field f : fieldMap.values())
         {
-            if (f.getAnnotation(Deprecated.class) != null)
-            {
-                // this field should be ignored by ProtoStuff.
-                // preserve its field number for backward-forward compat
-                i++;
-                continue;
-            }
-            if(DynamicBindingField.fieldIsXmlTransient(f))
-            {
-            	continue;
-            }
-            final int fieldMapping = ++i;
-            final String name = f.getName();
-            final Field<T> field = RuntimeFieldFactory.getFieldFactory(
-                    f.getType(), strategy).create(fieldMapping, name, f,
-                    strategy);
-            if (DynamicBindingField.fieldIsXmlValue(f))
-            {
-            	xmlValueFieldNumber = field.number;
-            	xmlValueFieldName = typeClass.getSimpleName();
-            }
-            final Field<T> aliasField = RuntimeFieldFactory.getFieldFactory(
-                    f.getType(), strategy).create(fieldMapping,
-                    	DynamicBindingField.retrieveXmlAlias(f), f, strategy);
-            final DynamicBindingField<T> xmlBinding = new DynamicBindingField<T>(field, aliasField,
-            		DynamicBindingField.fieldIsXmlAttribute(f), DynamicBindingField.fieldIsXmlValue(f),
-            		view.create(null));
-            fields.add(xmlBinding);
-        }
+        	if(predicate.apply(f) && tagged.apply(f) && !tagged.skipDeprecated(f))
+        	{
+        		final int fieldMapping = tagged.getFieldMapping(f);
+            
+        		final Field<T> field = predicate.createField(f, fieldMapping, strategy); 
+            			
+        		fields.add(field);
+
+        		if (DynamicBindingField.fieldIsXmlValue(f))
+        		{
+        			xmlValueFieldNumber = field.number;
+        			xmlValueFieldName = typeClass.getSimpleName();
+        		}
+        	}
+       }
         
         return new RuntimeSchema<T>(typeClass, fields, xmlValueFieldName, xmlValueFieldNumber, 
         		RuntimeEnv.newInstantiator(typeClass));
@@ -273,61 +262,21 @@ public final class RuntimeSchema<T> implements Schema<T>, FieldMap<T>
         }
 
         final Map<String, java.lang.reflect.Field> fieldMap = findInstanceFields(typeClass);
-        final ArrayList<Field<T>> fields = new ArrayList<Field<T>>(
-                fieldMap.size());
-        int i = 0;
-        boolean annotated = false;
+        final ArrayList<Field<T>> fields = new ArrayList<Field<T>>(fieldMap.size());
+
+        final RuntimePredicate<java.lang.reflect.Field, T> exclude = new RuntimeFieldExclusions<T>()
+        		.create(exclusions.toArray(new String[exclusions.size()]));
+        final RuntimePredicate<java.lang.reflect.Field, T> tagged = new RuntimeFieldsTagged<T>()
+        		.create(new String[]{ typeClass.getCanonicalName(), 
+        				String.valueOf(!fieldMap.isEmpty())});
+        
+
         for (java.lang.reflect.Field f : fieldMap.values())
         {
-            if (!exclusions.contains(f.getName()))
+            if(exclude.apply(f) && tagged.apply(f) && !tagged.skipDeprecated(f))
             {
-                if (f.getAnnotation(Deprecated.class) != null)
-                {
-                    // this field should be ignored by ProtoStuff.
-                    // preserve its field number for backward-forward compat
-                    i++;
-                    continue;
-                }
-
-                final Tag tag = f.getAnnotation(Tag.class);
-                final int fieldMapping;
-                final String name;
-                if (tag == null)
-                {
-                    // Fields gets assigned mapping tags according to their
-                    // definition order
-                    if (annotated)
-                    {
-                        String className = typeClass.getCanonicalName();
-                        String fieldName = f.getName();
-                        String message = String.format("%s#%s is not annotated with @Tag", className, fieldName);
-                        throw new RuntimeException(message);
-                    }
-                    fieldMapping = ++i;
-
-                    name = f.getName();
-                }
-                else
-                {
-                    // Fields gets assigned mapping tags according to their
-                    // annotation
-                    if (!annotated && !fields.isEmpty())
-                    {
-                        throw new RuntimeException(
-                                "When using annotation-based mapping, "
-                                        + "all fields must be annotated with @"
-                                        + Tag.class.getSimpleName());
-                    }
-                    annotated = true;
-                    fieldMapping = tag.value();
-
-                    if (fieldMapping < MIN_TAG_VALUE || fieldMapping > MAX_TAG_VALUE)
-                    {
-                        throw new IllegalArgumentException(ERROR_TAG_VALUE + ": " + fieldMapping + " on " + typeClass);
-                    }
-
-                    name = tag.alias().isEmpty() ? f.getName() : tag.alias();
-                }
+                final int fieldMapping = tagged.getFieldMapping(f);
+                final String name = tagged.getFieldName(f);
 
                 final Field<T> field = RuntimeFieldFactory.getFieldFactory(
                         f.getType(), strategy).create(fieldMapping, name, f,

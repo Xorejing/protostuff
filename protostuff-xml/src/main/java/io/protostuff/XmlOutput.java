@@ -28,7 +28,7 @@ import io.protostuff.StringSerializer.STRING;
  * @author David Yu
  * @created May 24, 2010
  */
-public final class XmlOutput implements StatefulOutput
+public final class XmlOutput implements StatefulXmlOutput
 {
 
     static final char[] EMPTY = new char[0];
@@ -226,14 +226,14 @@ public final class XmlOutput implements StatefulOutput
                 value.remaining(), repeated);
     }
     
-    public XmlAttributeOutput getXmlAttributeOutput() 
-    {
+	@Override
+	public StatefulXmlOutput getAttributeOutput() {
     	return xmlAttributeOutput;
-    }
+	}
 
-    public XmlValueOutput getXmlValueOutput() 
-    {
-    	return xmlValueOutput;
-    }
+	@Override
+	public StatefulXmlOutput getValueOutput(){
+		return xmlValueOutput;
+	}
 
 }
